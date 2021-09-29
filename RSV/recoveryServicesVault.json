@@ -27,6 +27,27 @@
             "type": "bool",
             "defaultValue": true
         },
+        "backupManagementType": {
+            "type": "string"
+        },
+        "policyName": {
+            "type": "string"
+        },
+        "instantRpRetentionRangeInDays": {
+            "type": "int"
+        },
+        "schedule": {
+            "type": "object"
+        },
+        "timeZone": {
+            "type": "string"
+        },
+        "retention": {
+            "type": "object"
+        },
+        "instantRPDetails": {
+            "type": "object"
+        },
         "tags": {
             "type": "object",
             "defaultValue": "[json('{}')]"
@@ -79,53 +100,25 @@
                         "value": "[parameters('name')]"
                     },
                     "backupManagementType": {
-                        "value": "AzureIaasVM"
+                        "value": "[parameters('backupManagementType')]"
                     },
                     "policyName": {
-                        "value": "DCs-daily"
+                        "value": "[parameters('policyName')]"
                     },
                     "instantRpRetentionRangeInDays": {
-                        "value": 3
+                        "value": "[parameters('instantRpRetentionRangeInDays')]"
                     },
                     "schedule": {
-                        "value": {
-                            "schedulePolicyType": "SimpleSchedulePolicy",
-                            "scheduleRunFrequency": "Daily",
-                            "scheduleRunTimes": [ "2021-08-24T22:30:00Z" ],
-                            "scheduleWeeklyFrequency": 0
-                        }
-
+                        "value": "[parameters('schedule')]"
                     },
                     "timeZone": {
-                        "value": "W. Europe Standard Time"
+                        "value": "[parameters('timeZone')]"
                     },
                     "instantRPDetails": {
-                        "value": {
-                            "azureBackupRGNamePrefix": "[parameters('name')]",
-                            "azureBackupRGNameSuffix": "-rg"
-                        }
+                        "value": "[parameters('instantRPDetails')]"
                     },
                     "retention": {
-                        "value": {
-                            "retentionPolicyType": "LongTermRetentionPolicy",
-                            "dailySchedule": {
-                                "retentionTimes": [ "2021-08-24T22:30:00Z" ],
-                                "retentionDuration": {
-                                    "count": 30,
-                                    "durationType": "Days"
-                                }
-                            },
-                            "weeklySchedule": {
-                                "daysOfTheWeek": [ "Sunday" ],
-                                "retentionTimes": [ "2021-08-24T22:30:00Z" ],
-                                "retentionDuration": {
-                                    "count": 6,
-                                    "durationType": "Weeks"
-                                }
-                            }
-
-                        }
-
+                        "value": "[parameters('retention')]"                    
                     }
                 }
             }
