@@ -11,6 +11,63 @@
         "identity": {
             "value": "None"
         },
+        "storageType": {
+            "value": "GeoRedundant"
+        },
+        "backupManagementType": {
+            "value": "AzureIaasVM"
+        },
+        "policyName": {
+            "value": "DCs-daily"
+        },
+        "instantRpRetentionRangeInDays": {
+            "value": 3
+        },
+        "schedule": {
+            "value": {
+                "schedulePolicyType": "SimpleSchedulePolicy",
+                "scheduleRunFrequency": "Daily",
+                "scheduleRunTimes": [
+                    "2021-08-24T22:30:00Z"
+                ],
+                "scheduleWeeklyFrequency": 0
+            }
+        },
+        "timeZone": {
+            "value": "W. Europe Standard Time"
+        },
+        "retention": {
+            "value": {
+                "retentionPolicyType": "LongTermRetentionPolicy",
+                "dailySchedule": {
+                    "retentionTimes": [
+                        "2021-08-24T22:30:00Z"
+                    ],
+                    "retentionDuration": {
+                        "count": 30,
+                        "durationType": "Days"
+                    }
+                },
+                "weeklySchedule": {
+                    "daysOfTheWeek": [
+                        "Sunday"
+                    ],
+                    "retentionTimes": [
+                        "2021-08-24T22:30:00Z"
+                    ],
+                    "retentionDuration": {
+                        "count": 6,
+                        "durationType": "Weeks"
+                    }
+                }
+            }
+        },
+        "instantRPDetails": {
+            "value": {
+                "azureBackupRGNamePrefix": "[parameters('name')]",
+                "azureBackupRGNameSuffix": "-rg"
+            }
+        },
         "tags": {
             "value": {
                 "owner": "L&S",
