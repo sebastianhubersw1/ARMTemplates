@@ -82,7 +82,7 @@
                         "value": "AzureIaasVM"
                     },
                     "policyName": {
-                        "value": "[concat(parameters('name'), '/DCs-daily')]"
+                        "value": "DCs-daily"
                     },
                     "instantRpRetentionRangeInDays": {
                         "value": 3
@@ -96,57 +96,39 @@
                         }
 
                     },
-                "timeZone": {
-                    "value": "W. Europe Standard Time"
-                },
-                "retention": {
-                    "retentionPolicyType": {
-                        "value": "LongTermRetentionPolicy"
+                    "timeZone": {
+                        "value": "W. Europe Standard Time"
                     },
-                    "dailySchedule": {
-                        "retentionTimes": {
-                            "value": [
-                                "2021-08-24T22:30:00Z"
-                            ]
-                        },
-                        "retentionDuration": {
-                            "count": {
-                                "value": 30
-                            },
-                            "durationType": {
-                                "value": "Days"
-                            }
+                    "instantRPDetails": {
+                        "value": {
+                            "azureBackupRGNamePrefix": "[parameters('name')]",
+                            "azureBackupRGNameSuffix": "-rg"
                         }
                     },
-                    "weeklySchedule": {
-                        "daysOfTheWeek": {
-                            "value": [
-                                "Sunday"
-                            ]
-                        },
-                        "retentionTimes": {
-                            "value": [
-                                "2021-08-24T22:30:00Z"
-                            ]
-                        },
-                        "retentionDuration": {
-                            "count": {
-                                "value": 6
+                    "retention": {
+                        "value": {
+                            "retentionPolicyType": "LongTermRetentionPolicy",
+                            "dailySchedule": {
+                                "retentionTimes": [ "2021-08-24T22:30:00Z" ],
+                                "retentionDuration": {
+                                    "count": 30,
+                                    "durationType": "Days"
+                                }
                             },
-                            "durationType": {
-                                "value": "Weeks"
+                            "weeklySchedule": {
+                                "daysOfTheWeek": [ "Sunday" ],
+                                "retentionTimes": [ "2021-08-24T22:30:00Z" ],
+                                "retentionDuration": {
+                                    "count": 6,
+                                    "durationType": "Weeks"
+                                }
                             }
+
                         }
-                    }
-                },
-                "instantRPDetails": {
-                    "azureBackupRGNamePrefix": {
-                        "value": "[parameters('name')]"
-                    },
-                    "azureBackupRGNameSuffix": {
-                        "value": "-rg"
+
                     }
                 }
             }
         }
-} ] }
+    ]
+}
