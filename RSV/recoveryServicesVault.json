@@ -88,75 +88,65 @@
                         "value": 3
                     },
                     "schedule": {
-                        "schedulePolicyType": {
-                            "value": "SimpleSchedulePolicy"
-                        },
-                        "scheduleRunFrequency": {
-                            "value": "Daily"
-                        },
-                        "scheduleRunTimes": {
+                        "value": {
+                            "schedulePolicyType": "SimpleSchedulePolicy",
+                            "scheduleRunFrequency": "Daily",
+                            "scheduleRunTimes": [ "2021-08-24T22:30:00Z" ],
+                            "scheduleWeeklyFrequency": 0
+                        }
+
+                    },
+                "timeZone": {
+                    "value": "W. Europe Standard Time"
+                },
+                "retention": {
+                    "retentionPolicyType": {
+                        "value": "LongTermRetentionPolicy"
+                    },
+                    "dailySchedule": {
+                        "retentionTimes": {
                             "value": [
                                 "2021-08-24T22:30:00Z"
                             ]
                         },
-                        "scheduleWeeklyFrequency": {
-                            "value": 0
-                        }
-                    },
-                    "timeZone": {
-                        "value": "W. Europe Standard Time"
-                    },
-                    "retention": {
-                        "retentionPolicyType": {
-                            "value": "LongTermRetentionPolicy"
-                        },
-                        "dailySchedule": {
-                            "retentionTimes": {
-                                "value": [
-                                    "2021-08-24T22:30:00Z"
-                                ]
+                        "retentionDuration": {
+                            "count": {
+                                "value": 30
                             },
-                            "retentionDuration": {
-                                "count": {
-                                    "value": 30
-                                },
-                                "durationType": {
-                                    "value": "Days"
-                                }
-                            }
-                        },
-                        "weeklySchedule": {
-                            "daysOfTheWeek": {
-                                "value": [
-                                    "Sunday"
-                                ]
-                            },
-                            "retentionTimes": {
-                                "value": [
-                                    "2021-08-24T22:30:00Z"
-                                ]
-                            },
-                            "retentionDuration": {
-                                "count": {
-                                    "value": 6
-                                },
-                                "durationType": {
-                                    "value": "Weeks"
-                                }
+                            "durationType": {
+                                "value": "Days"
                             }
                         }
                     },
-                    "instantRPDetails": {
-                        "azureBackupRGNamePrefix": {
-                            "value": "[parameters('name')]"
+                    "weeklySchedule": {
+                        "daysOfTheWeek": {
+                            "value": [
+                                "Sunday"
+                            ]
                         },
-                        "azureBackupRGNameSuffix": {
-                            "value": "-rg"
+                        "retentionTimes": {
+                            "value": [
+                                "2021-08-24T22:30:00Z"
+                            ]
+                        },
+                        "retentionDuration": {
+                            "count": {
+                                "value": 6
+                            },
+                            "durationType": {
+                                "value": "Weeks"
+                            }
                         }
+                    }
+                },
+                "instantRPDetails": {
+                    "azureBackupRGNamePrefix": {
+                        "value": "[parameters('name')]"
+                    },
+                    "azureBackupRGNameSuffix": {
+                        "value": "-rg"
                     }
                 }
             }
         }
-
-    ]
-}
+} ] }
