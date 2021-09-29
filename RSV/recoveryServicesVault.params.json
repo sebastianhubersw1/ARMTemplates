@@ -64,7 +64,7 @@
         },
         "instantRPDetails": {
             "value": {
-                "azureBackupRGNamePrefix": "[parameters('name')]",
+                "azureBackupRGNamePrefix": "weu-200-h-dsrpc",
                 "azureBackupRGNameSuffix": "-rg"
             }
         },
