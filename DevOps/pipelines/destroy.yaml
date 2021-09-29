@@ -1,0 +1,32 @@
+#Destroy Storage for Resource Templates
+#Must be started manually
+
+#disable CI builds entirely
+trigger: none 
+
+variables:
+  - group: 'devops'
+  - group: 'weu-sub-200-h-management-001'
+
+pool:
+  vmImage: $(devops_poolName)
+
+stages:
+
+  - stage: build
+    jobs:
+    
+    - job:
+      displayName: 'Destroy Resource Templates'
+      steps:     
+
+      #Create Resource Group, Storage Account and Storage Account Container for Resource Templates
+      - task: AzureCLI@2
+        displayName: 'Destory resource group and storage account'
+        inputs:
+          azureSubscription: '$(devops_resourceManagerConnectionName)'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az account set --subscriptionId $(emea_management_subscriptionId)
+            az group delete -n $(devops_resourceGroupName) --yes

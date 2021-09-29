@@ -1,0 +1,68 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "identity": {
+            "type": "string",
+            "allowedValues": [
+                "None",
+                "SystemAssigned"
+            ]
+        },
+        "storageType": {
+            "type": "string",
+            "allowedValues": [
+                "LocallyRedundant",
+                "GeoRedundant"
+            ],
+            "defaultValue": "GeoRedundant"
+        },
+        "enableCRR": {
+            "type": "bool",
+            "defaultValue": true
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
+        }
+    },
+    "variables": {
+        "sku": {
+            "name": "RS0",
+            "tier": "Standard"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.RecoveryServices/vaults",
+            "apiVersion": "2020-10-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "sku": "[variables('sku')]",
+            "identity": {
+                "type": "[parameters('identity')]"
+            },
+            "properties": {
+            },
+            "tags": "[parameters('tags')]"
+        },
+        {
+            "type": "Microsoft.RecoveryServices/vaults/backupstorageconfig",
+            "apiVersion": "2020-02-02",
+            "name": "[concat(parameters('name'), '/vaultstorageconfig')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.RecoveryServices/vaults/', parameters('name'))]"
+            ],
+            "properties": {
+                "StorageModelType": "[parameters('storageType')]",
+                "CrossRegionRestoreFlag": "[parameters('enableCRR')]"
+            }
+        }
+    ]
+}

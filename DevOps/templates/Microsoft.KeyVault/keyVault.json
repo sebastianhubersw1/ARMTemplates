@@ -1,0 +1,77 @@
+ {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "tenantId": {
+            "type": "string"
+        },
+        "skuName": {
+            "type": "string",
+            "allowedValues": [
+                "Standard",
+                "Premium"
+            ],
+            "defaultValue": "Standard"
+        },
+        "networkAcls": {
+            "type": "object"
+        },
+        "enabledForDeployment": {
+            "type": "bool"
+        },
+        "enabledForDiskEncryption": {
+            "type": "bool"
+        },
+        "enabledForTemplateDeployment": {
+            "type": "bool"
+        },
+        "enableSoftDelete": {
+            "type": "bool"
+        },
+        "softDeleteRetentionInDays": {
+            "type": "int",
+            "minValue": 7,
+            "maxValue": 90
+        },
+        "enablePurgeProtection": {
+            "type": "bool",
+            "metadata": {
+                "description": "Value only accepts 'true', if any other values are submitted purge protection will not be enabled"
+            }
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "apiVersion": "2019-09-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "properties": {
+                "tenantId": "[parameters('tenantId')]",
+                "accessPolicies": "[json('[]')]",
+                "sku": {
+                    "name": "[parameters('skuName')]",
+                    "family": "A"
+                },
+                "networkAcls": "[parameters('networkAcls')]",
+                "enabledForDeployment": "[parameters('enabledForDeployment')]",
+                "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+                "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+                "enableSoftDelete": "[parameters('enableSoftDelete')]",
+                "softDeleteRetentionInDays": "[parameters('softDeleteRetentionInDays')]",
+                "enablePurgeProtection": "[if(parameters('enablePurgeProtection'), parameters('enablePurgeProtection'), json('null'))]"
+            },
+            "tags": "[parameters('tags')]"
+        }
+    ]
+}

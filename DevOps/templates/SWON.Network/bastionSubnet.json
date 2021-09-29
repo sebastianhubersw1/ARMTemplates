@@ -1,0 +1,152 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountUri": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located."
+            }
+        },
+        "storageAccountContainerSasToken": {
+            "type": "string",
+            "metadata": {
+                "description": "The sasToken required to access storageAccountUri.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            }
+        },
+        "bastionHostName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the virtual network where the bastion host gets deployed"
+            }
+        },
+        "subnetAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The address prefix of the subnet where the bastion host gets deployed"
+            }
+        }
+    },
+    "variables": {
+        "bastion": {
+            "path": "[concat(parameters('storageAccountUri'), 'Microsoft.Network/bastion.json', parameters('storageAccountContainerSasToken'))]",
+            "version": "1.0.0.0"
+        },
+        "virtualNetworkSubnet": {
+            "path": "[concat(parameters('storageAccountUri'), 'Microsoft.Network/virtualNetworkSubnet.json', parameters('storageAccountContainerSasToken'))]",
+            "version": "1.0.0.0"
+        },
+        "publicIpAddress": {
+            "path": "[concat(parameters('storageAccountUri'), 'Microsoft.Network/publicIpAddress.json', parameters('storageAccountContainerSasToken'))]",
+            "version": "1.0.0.0"
+        },
+        "subnetName": "AzureBastionSubnet",
+        "publicIpAddressName": "[concat(parameters('bastionHostName'), '-pip')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "bastionSubnet",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('virtualNetworkSubnet').path]",
+                    "contentVersion":"[variables('virtualNetworkSubnet').version]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[variables('subnetName')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "tags": {
+                        "value": "[parameters('tags')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "addressPrefix": {
+                        "value": "[parameters('subnetAddressPrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "bastionPublicIpAddress",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('publicIpAddress').path]",
+                    "contentVersion":"[variables('publicIpAddress').version]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[variables('publicIpAddressName')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "tags": {
+                        "value": "[parameters('tags')]"
+                    },
+                    "skuName": {
+                        "value": "Standard"
+                    },
+                    "publicIpAllocationMethod": {
+                        "value": "Static"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'bastionSubnet')]",
+                "[resourceId('Microsoft.Resources/deployments', 'bastionPublicIpAddress')]"
+            ],
+            "name": "bastionHost",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('bastion').path]",
+                    "contentVersion":"[variables('bastion').version]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[variables('subnetName')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "tags": {
+                        "value": "[parameters('tags')]"
+                    },
+                    "subnetResourceId": {
+                        "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', concat(parameters('virtualNetworkName'), '/', variables('subnetName')))]"
+                    },
+                    "publicIpAddressResourceId": {
+                        "value": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
+                    }
+                }
+            }
+        }
+    ]
+}

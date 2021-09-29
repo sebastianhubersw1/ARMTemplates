@@ -1,0 +1,25 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "location": "global",
+            "name": "[parameters('name')]",
+            "tags": "[parameters('tags')]"
+        }
+    ]
+}

@@ -1,0 +1,38 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "skuName": {
+            "type": "string",
+            "allowedValues": [
+                "Free",
+                "Basic"
+            ],
+            "defaultValue": "Basic"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Automation/automationAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "properties": {
+                "sku": {
+                    "name": "[parameters('skuName')]"
+                }
+            },
+            "tags": "[parameters('tags')]"
+        }
+    ]
+}

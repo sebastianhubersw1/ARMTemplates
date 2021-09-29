@@ -1,0 +1,67 @@
+ {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "ipConfig01SubnetResourceId": {
+            "type": "string"
+        },
+        "privateIPAddress": {
+            "type": "string"
+        },
+        "dnsServers": {
+            "type": "array"
+        },
+        "enableAcceleratedNetworking": {
+            "type": "bool"
+        },
+        "enableIPForwarding": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        
+         "NSG_Id":{
+          "type": "string"           
+        },
+        "tags": {
+            "type": "object"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-06-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig01",
+                        "properties": {
+                            "privateIPAddress": "[parameters('privateIPAddress')]",
+                            "subnet": {
+                                "id": "[parameters('ipConfig01SubnetResourceId')]"
+                            },
+                            "privateIPAllocationMethod": "Static",
+                            "primary": true
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": "[parameters('dnsServers')]"
+                },
+                "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]",
+                "enableIPForwarding": "[parameters('enableIPForwarding')]",
+                "networkSecurityGroup":{
+                    "id": "[parameters('NSG_Id')]" 
+                }
+            },
+            "tags": "[parameters('tags')]"
+        }
+    ]
+}

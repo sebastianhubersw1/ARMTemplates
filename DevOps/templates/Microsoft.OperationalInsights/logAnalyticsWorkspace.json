@@ -1,0 +1,84 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "skuName": {
+            "type": "string",
+            "allowedValues": [
+                "PerGB2018"
+            ],
+            "defaultValue": "PerGB2018"
+        },
+        "retentionInDays": {
+            "type": "int",
+            "minValue": 30,
+            "maxValue": 730
+        },
+        "dailyQuotaGb": {
+            "type": "int",
+            "metadata": {
+                "description": "Max GB of data that can be ingested per day"
+            }
+        },
+        "publicNetworkAccessForIngestion": {
+            "type": "string"
+        },
+        "publicNetworkAccessForQuery": {
+            "type": "string"
+        },
+        "linkAutomationAccount": {
+            "type": "bool"
+        },
+        "automationAccountResourceId": {
+            "type": "string",
+            "metadata": {
+                "description": "Automation Account must be in the same region"
+            },
+            "defaultValue": "empty"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2020-08-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "tags": "[parameters('tags')]",
+            "properties": {
+                "sku": {
+                    "name": "[parameters('skuName')]"
+                },
+                "workspaceCapping": {
+                    "dailyQuotaGb": "[parameters('dailyQuotaGb')]"
+                },
+                "retentionInDays": "[parameters('retentionInDays')]",
+                "publicNetworkAccessForIngestion": "[parameters('publicNetworkAccessForIngestion')]",
+                "publicNetworkAccessForQuery": "[parameters('publicNetworkAccessForQuery')]"
+            },
+            "resources": [
+                {
+                    "condition": "[parameters('linkAutomationAccount')]",
+                    "type": "Microsoft.OperationalInsights/workspaces/linkedServices",
+                    "apiVersion": "2020-08-01",
+                    "name": "[concat(parameters('name'), '/' , 'Automation')]",
+                    "properties": {
+                        "resourceId": "[parameters('automationAccountResourceId')]"
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.OperationalInsights/workspaces/', parameters('name'))]"
+                    ]
+                }
+            ]
+        }
+    ]
+}

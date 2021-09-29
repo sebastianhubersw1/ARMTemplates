@@ -1,0 +1,72 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
+        },
+        "addressPrefixes": {
+            "type": "array"
+        },
+        "dnsServers": {
+            "type": "array"
+        },
+        "subnets": {
+            "type": "array",
+            "defaultValue": "[json('[]')]"
+        },
+        "enableDdosProtectionStandard": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "ddosProtectionPlanResourceId": {
+            "type": "string",
+            "defaultValue": "nothing",
+            "metadata": {
+                "description": "Default value will be applied if no value is submitted at deployment time. If so, 'nothing' is used for the concatenate logic in the variables section."
+            }
+        }
+    },
+    "variables": {
+        "emptyObject": "[json('{}')]",
+        "baseProperties": {
+            "addressSpace": {
+                "addressPrefixes": "[parameters('addressPrefixes')]"
+            },
+            "dhcpoptions": {
+                "dnsServers": "[parameters('dnsServers')]"
+            },
+            "enableDdosProtection": "[parameters('enableDdosProtectionStandard')]",
+            "subnets": "[parameters('subnets')]"
+        },
+        "ddosProtectionPlan": {
+            "ddosProtectionPlan": {
+                "id": "[parameters('ddosProtectionPlanResourceId')]"
+            }
+        },
+        "properties": "[union(
+            variables('baseProperties'),
+            if(parameters('enableDdosProtectionStandard'), variables('ddosProtectionPlan'), variables('emptyObject'))
+        )]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-07-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "properties": "[variables('properties')]",
+            "tags": "[parameters('tags')]"
+        }
+    ]
+}

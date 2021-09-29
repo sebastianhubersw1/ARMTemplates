@@ -1,0 +1,112 @@
+ {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "identity": {
+            "type": "string",
+            "allowedValues": [
+                "None",
+                "SystemAssigned"
+            ]
+        },
+        "storageType": {
+            "type": "string",
+            "allowedValues": [
+                "LocallyRedundant",
+                "GeoRedundant"
+            ],
+            "defaultValue": "GeoRedundant"
+        },
+        "tags": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "sku": {
+            "name": "RS0",
+            "tier": "Standard"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.RecoveryServices/vaults",
+            "apiVersion": "2020-10-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "sku": "[variables('sku')]",
+            "identity": {
+                "type": "[parameters('identity')]"
+            },
+            "properties": {
+            },
+            "tags": "[parameters('tags')]"
+        },
+        {
+            "type": "Microsoft.RecoveryServices/vaults/backupstorageconfig",
+            "apiVersion": "2020-02-02",
+            "name": "[concat(parameters('name'), '/vaultstorageconfig')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.RecoveryServices/vaults/', parameters('name'))]"
+            ],
+            "properties": {
+                "StorageModelType": "[parameters('storageType')]"
+            }
+        },
+        {
+            "type": "Microsoft.RecoveryServices/vaults/backupPolicies",
+            "apiVersion": "2021-06-01",
+            "name": "[concat(parameters('name'), '/DCs-daily')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.RecoveryServices/vaults/', parameters('name'))]"
+            ],
+            "properties": {
+                "backupManagementType": "AzureIaasVM",
+                "instantRPDetails": {
+                    "azureBackupRGNamePrefix": "[parameters('name')]",
+                    "azureBackupRGNameSuffix": "-rg"
+                },
+                "schedulePolicy": {
+                    "schedulePolicyType": "SimpleSchedulePolicy",
+                    "scheduleRunFrequency": "Daily",
+                    "scheduleRunTimes": [
+                        "2021-08-24T22:30:00Z"
+                    ],
+                    "scheduleWeeklyFrequency": 0
+                },
+                "retentionPolicy": {
+                    "retentionPolicyType": "LongTermRetentionPolicy",
+                    "dailySchedule": {
+                        "retentionTimes": [
+                            "2021-08-24T22:30:00Z"
+                        ],
+                        "retentionDuration": {
+                            "count": 30,
+                            "durationType": "Days"
+                        }
+                    },
+                    "weeklySchedule": {
+                        "daysOfTheWeek": [
+                            "Sunday"
+                        ],
+                        "retentionTimes": [
+                            "2021-08-24T22:30:00Z"
+                        ],
+                        "retentionDuration": {
+                            "count": 6,
+                            "durationType": "Weeks"
+                        }
+                    }
+                },
+                "instantRpRetentionRangeInDays": 3,
+                "timeZone": "W. Europe Standard Time",
+                "protectedItemsCount": 0
+            }
+        }
+    ]
+}

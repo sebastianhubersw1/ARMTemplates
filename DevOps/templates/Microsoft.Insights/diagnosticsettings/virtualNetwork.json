@@ -1,0 +1,45 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_subscriptionId": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_resourceGroupName": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_name": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "scope": "[format('Microsoft.Network/virtualNetworks/{0}', parameters('virtualNetworkName'))]",
+            "type": "Microsoft.Insights/diagnosticsettings",
+            "name": "All to Log Analytics",
+            "apiVersion": "2017-05-01-preview",
+            "properties": {
+                "workspaceId": "[resourceId(
+                    parameters('logAnalyticsWorkspace_subscriptionId'),
+                    parameters('logAnalyticsWorkspace_resourceGroupName'),
+                    'Microsoft.OperationalInsights/workspaces',
+                    parameters('logAnalyticsWorkspace_name'))]",
+                "logs":[
+                    {
+                        "category":"VMProtectionAlerts",
+                        "enabled":true
+                    }
+                ],
+                "metrics":[
+                    {
+                        "category":"AllMetrics",
+                        "enabled":true
+                    }
+                ]
+            }
+        }
+    ]
+}

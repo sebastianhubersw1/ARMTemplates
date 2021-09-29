@@ -1,0 +1,53 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
+        },
+        "subnetResourceId": {
+            "type": "string"
+        },
+        "publicIPAddressResourceId": {
+            "type": "string"
+        },
+        "privateIPAllocationMethod": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/bastionHosts",
+            "apiVersion": "2020-06-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig01",
+                        "properties": {
+                            "subnet": {
+                                "id": "[parameters('subnetResourceId')]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[parameters('publicIPAddressResourceId')]"
+                            },
+                            "privateIPAllocationMethod": "[parameters('privateIPAllocationMethod')]"
+                        }
+                    }
+                ]
+            },
+            "tags": "[parameters('tags')]"
+        }
+    ]
+}

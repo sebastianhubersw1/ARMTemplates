@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "westeurope"
+        },
+        "name": {
+            "value": "weu200pdc00001-nic-001"
+        },
+        "ipConfig01SubnetResourceId": {
+            "value": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-p-network-DCRS-rg/providers/Microsoft.Network/virtualNetworks/weu-200-p-DCRS-001-vnet/subnets/snet-1"
+        },
+        "dnsServers": {
+            "value": []
+        },
+        "privateIPAddress": {
+            "value": "10.35.35.4"
+        },
+        "NSG_Id": {
+            "value": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-p-domaincontrollers-DCRS-rg/providers/Microsoft.Network/networkSecurityGroups/weu-200-h-identity-identity-emea-snet-int-nsg"
+        },
+        "enableAcceleratedNetworking": {
+            "value": true
+        },
+        "tags": {
+            "value": {
+                "owner": "L&S",
+                "notes": "Network Interface"
+            }
+        }
+    }
+}

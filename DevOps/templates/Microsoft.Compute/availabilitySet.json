@@ -1,0 +1,71 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
+        },
+        "updateDomainCount": {
+            "type": "int",
+            "minValue": 1,
+            "maxValue": 20,
+            "defaultValue": 5
+        },
+        "faultDomainCount": {
+            "type": "int",
+            "minValue": 1,
+            "maxValue": 3,
+            "defaultValue": 3
+        },
+        "connectProximityPlacementGroup": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "proximityPlacementGroupResourceId": {
+            "type": "string",
+            "defaultValue": "nothing",
+            "metadata": {
+                "description": "Default value will be applied if no value is submitted at deployment time. If so, 'nothing' is used for the concatenate logic in the variables section."
+            }
+        }
+    },
+    "variables": {
+        "emptyObject": "[json('{}')]",
+        "baseProperties": {
+            "platformUpdateDomainCount": "[parameters('updateDomainCount')]",
+            "platformFaultDomainCount": "[parameters('faultDomainCount')]"
+        },
+        "withProximityPlacementGroup": {
+            "proximityPlacementGroup": {
+                "id": "[parameters('proximityPlacementGroupResourceId')]"
+            }
+        },
+        "properties": "[union(
+                variables('baseProperties'),
+                if(parameters('connectProximityPlacementGroup'), variables('withProximityPlacementGroup'), variables('emptyObject'))
+        )]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('name')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('tags')]",
+            "properties": "[variables('properties')]",
+            "sku": {
+                "name": "Aligned"
+            }
+        }
+    ]
+}

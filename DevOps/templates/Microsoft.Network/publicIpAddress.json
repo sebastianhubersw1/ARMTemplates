@@ -1,0 +1,113 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "zones": {
+            "type": "array",
+            "defaultValue": "[json('[]')]"
+        },
+        "createFromPublicIpPrefix": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "publicIpPrefixResourceId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Default value is empty in case the parameter is not set in the parameters file"
+            }
+        },
+        "skuName": {
+            "type": "string",
+            "allowedValues": [
+                "Basic",
+                "Standard"
+            ],
+            "defaultValue": "Standard"
+        },
+        "publicIpAddressVersion": {
+            "type": "string",
+            "allowedValues": [
+                "IPv4",
+                "IPv6"
+            ],
+            "defaultValue": "IPv4"
+        },
+        "publicIpAllocationMethod": {
+            "type": "string",
+            "allowedValues": [
+                "Static",
+                "Dynamic"
+            ]
+        },
+        "hasDnsSettings": {
+            "type": "bool",
+            "defaultValue": false
+        },
+        "dnsSettings": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
+        },
+        "ipTags": {
+            "type": "array",
+            "defaultValue": "[json('[]')]"
+        },
+        "idleTimeoutInMinutes": {
+            "type": "int",
+            "minValue": 4,
+            "maxValue": 30,
+            "defaultValue": 4
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
+        }
+    },
+    "variables": {
+        "emptyObject": "[json('{}')]",
+        "baseProperties": {
+            "publicIPAllocationMethod": "[parameters('publicIPAllocationMethod')]",
+            "publicIPAddressVersion": "[parameters('publicIPAddressVersion')]",
+            "ipTags": "[parameters('ipTags')]",
+            "idleTimeoutInMinutes": "[parameters('idleTimeoutInMinutes')]"
+        },
+        "createFromPublicIpPrefix": {
+            "publicIPPrefix": {
+                "id": "[parameters('publicIpPrefixResourceId')]"
+            }
+        },
+        "addDnsSettings": {
+            "dnsSettings": {
+                "id": "[parameters('dnsSettings')]"
+            }
+        },
+        "properties": "[union(
+                variables('baseProperties'),
+                if(parameters('createFromPublicIpPrefix'), variables('createFromPublicIpPrefix'), variables('emptyObject')),
+                if(parameters('hasDnsSettings'), variables('addDnsSettings'), variables('emptyObject'))
+        )]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2020-06-01",
+            "location": "[parameters('location')]",
+            "name": "[parameters('name')]",
+            "zones": "[parameters('zones')]",
+            "sku": {
+                "name": "[parameters('skuName')]"
+            },
+            "properties": "[variables('properties')]",
+            "tags": "[parameters('tags')]"
+        }
+    ]
+}

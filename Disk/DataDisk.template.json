@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Datadisk_name": {
+            "defaultValue": "datadisk",
+            "type": "String"
+        },
+        "DataDisk_Size": {
+            "defaultValue": 128,
+            "type": "int"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2020-09-30",
+            "name": "[parameters('Datadisk_name')]",
+            "location": "westeurope",
+            "sku": {
+                "name": "Premium_LRS",
+                "tier": "Premium"
+            },
+            "properties": {
+                "creationData": {
+                    "createOption": "Empty"
+                },
+                "diskSizeGB": "[parameters('Datadisk_Size')]",
+                "diskIOPSReadWrite": 500,
+                "diskMBpsReadWrite": 100,
+                "encryption": {
+                    "type": "EncryptionAtRestWithPlatformKey"
+                },
+                "diskState": "Unattached",
+                "networkAccessPolicy": "AllowAll",
+                "tier": "P10"
+            }
+        }
+    ]
+}

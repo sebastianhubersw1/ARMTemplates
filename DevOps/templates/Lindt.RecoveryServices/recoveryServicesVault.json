@@ -1,0 +1,259 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountContainerUri": {
+            "type": "string"
+        },
+        "storageAccountContainerSasToken": {
+            "type": "string",
+            "metadata": {
+                "description": "The sasToken required to access storageAccountUri.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            }
+        },
+        "location": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspaceName": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "identity": {
+            "type": "string",
+            "allowedValues": [
+                "None",
+                "SystemAssigned"
+            ],
+            "defaultValue": "SystemAssigned"
+        },
+        "storageType": {
+            "type": "string",
+            "allowedValues": [
+                "LocallyRedundant",
+                "GeoRedundant"
+            ],
+            "defaultValue": "GeoRedundant"
+        },
+        "enableCRR": {
+            "type": "bool",
+            "defaultValue": true
+        },
+        "backupClass1": {
+            "type": "object"
+        },
+        "backupClass2": {
+            "type": "object"
+        },
+        "backupClass3": {
+            "type": "object"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
+        }
+    },
+    "variables": {
+        "recoveryServicesVaultTemplate": {
+            "path": "[concat(parameters('storageAccountContainerUri'), 'Microsoft.RecoveryServices/recoveryServicesVault.json', parameters('storageAccountContainerSasToken'))]",
+            "version": "1.0.0.0"
+        },
+        "backupPoliciesTemplate": {
+            "path": "[concat(parameters('storageAccountContainerUri'), 'Microsoft.RecoveryServices/backupPolicies.json', parameters('storageAccountContainerSasToken'))]",
+            "version": "1.0.0.0"
+        },
+        "recoveryServicesVaultDiagnosticSettingsTemplate": {
+            "path": "[concat(parameters('storageAccountContainerUri'), 'Microsoft.Insights/diagnosticsettings/recoveryServicesVault.json', parameters('storageAccountContainerSasToken'))]",
+            "version": "1.0.0.0"
+        }
+    },
+    "resources": [
+        {
+            "name": "recoveryServicesVault",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('recoveryServicesVaultTemplate').path]",
+                    "contentVersion": "[variables('recoveryServicesVaultTemplate').version]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[parameters('name')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "identity": {
+                        "value": "[parameters('identity')]"
+                    },
+                    "storageType": {
+                        "value": "[parameters('storageType')]"
+                    },
+                    "enableCRR": {
+                        "value": "[parameters('enableCRR')]"
+                    },
+                    "tags": {
+                        "value": "[parameters('tags')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "backupClass1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'recoveryServicesVault')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('backupPoliciesTemplate').path]",
+                    "contentVersion": "[variables('backupPoliciesTemplate').version]"
+                },
+                "parameters": {
+                    "vaultName": {
+                        "value": "[parameters('name')]"
+                    },
+                    "backupManagementType": {
+                        "value": "[parameters('backupClass1').backupManagementType]"
+                    },
+                    "policyName": {
+                        "value": "[parameters('backupClass1').name]"
+                    },
+                    "instantRpRetentionRangeInDays": {
+                        "value": "[parameters('backupClass1').instantRpRetentionRangeInDays]"
+                    },
+                    "schedule": {
+                        "value": "[parameters('backupClass1').schedule]"
+                    },
+                    "timeZone": {
+                        "value": "[parameters('backupClass1').timeZone]"
+                    },
+                    "retention": {
+                        "value": "[parameters('backupClass1').retention]"
+                    },
+                    "instantRPDetails": {
+                        "value": "[parameters('backupClass1').instantRPDetails]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "backupClass2",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'recoveryServicesVault')]",
+                "[resourceId('Microsoft.Resources/deployments', 'backupClass1')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('backupPoliciesTemplate').path]",
+                    "contentVersion": "[variables('backupPoliciesTemplate').version]"
+                },
+                "parameters": {
+                    "vaultName": {
+                        "value": "[parameters('name')]"
+                    },
+                    "backupManagementType": {
+                        "value": "[parameters('backupClass2').backupManagementType]"
+                    },
+                    "policyName": {
+                        "value": "[parameters('backupClass2').name]"
+                    },
+                    "instantRpRetentionRangeInDays": {
+                        "value": "[parameters('backupClass2').instantRpRetentionRangeInDays]"
+                    },
+                    "schedule": {
+                        "value": "[parameters('backupClass2').schedule]"
+                    },
+                    "timeZone": {
+                        "value": "[parameters('backupClass2').timeZone]"
+                    },
+                    "retention": {
+                        "value": "[parameters('backupClass2').retention]"
+                    },
+                    "instantRPDetails": {
+                        "value": "[parameters('backupClass2').instantRPDetails]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "backupClass3",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'recoveryServicesVault')]",
+                "[resourceId('Microsoft.Resources/deployments', 'backupClass2')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('backupPoliciesTemplate').path]",
+                    "contentVersion": "[variables('backupPoliciesTemplate').version]"
+                },
+                "parameters": {
+                    "vaultName": {
+                        "value": "[parameters('name')]"
+                    },
+                    "backupManagementType": {
+                        "value": "[parameters('backupClass3').backupManagementType]"
+                    },
+                    "policyName": {
+                        "value": "[parameters('backupClass3').name]"
+                    },
+                    "instantRpRetentionRangeInDays": {
+                        "value": "[parameters('backupClass3').instantRpRetentionRangeInDays]"
+                    },
+                    "schedule": {
+                        "value": "[parameters('backupClass3').schedule]"
+                    },
+                    "timeZone": {
+                        "value": "[parameters('backupClass3').timeZone]"
+                    },
+                    "retention": {
+                        "value": "[parameters('backupClass3').retention]"
+                    },
+                    "instantRPDetails": {
+                        "value": "[parameters('backupClass3').instantRPDetails]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "recoveryServicesVaultDiagnosticSettings",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'recoveryServicesVault')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('recoveryServicesVaultDiagnosticSettingsTemplate').path]",
+                    "contentVersion": "[variables('recoveryServicesVaultDiagnosticSettingsTemplate').version]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[parameters('name')]"
+                    },
+                    "logAnalyticsWorkspace_subscriptionId": {
+                        "value": "[subscription().subscriptionId]"
+                    },
+                    "logAnalyticsWorkspace_resourceGroupName": {
+                        "value": "[resourceGroup().name]"
+                    },
+                    "logAnalyticsWorkspace_name": {
+                        "value": "[parameters('logAnalyticsWorkspaceName')]"
+                    }
+                }
+            }
+        }
+    ]
+}

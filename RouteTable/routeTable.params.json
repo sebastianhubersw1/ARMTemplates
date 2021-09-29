@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "westeurope"
+        },
+        "name": {
+            "value": "weu-200-identity-emea-snet-int-rt"
+        },
+        "disableRoutePropagation": {
+            "value": false
+        },
+        "routes": {
+            "value": [
+                {
+                    "name": "DefaultRoute",
+                    "properties": {
+                        "addressPrefix": "0.0.0.0/0",
+                        "nextHopType": "VirtualAppliance",
+                        "nextHopIpAddress": "10.32.0.36"
+                    }
+                }
+            ]
+        },
+        "tags": {
+            "value": {
+                "owner": "L&S",
+                "notes": "Route Table"
+            }
+        }
+    }
+}

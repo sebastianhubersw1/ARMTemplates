@@ -1,0 +1,214 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "pricingTierVMs": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierSqlServers": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierAppServices": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierStorageAccounts": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierSqlServerVirtualMachines": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierKubernetesService": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierContainerRegistry": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierKeyVaults": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierDns": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierArm": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    },
+    "pricingTierOpenSourceRelationalDatabases": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ],
+      "defaultValue": "Standard"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "VirtualMachines",
+      "properties": {
+        "pricingTier": "[parameters('pricingTierVMs')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "SqlServers",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'VirtualMachines')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierSqlServers')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "AppServices",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'SqlServers')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierAppServices')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "StorageAccounts",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'AppServices')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierStorageAccounts')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "SqlServerVirtualMachines",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'StorageAccounts')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierSqlServerVirtualMachines')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "KubernetesService",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'SqlServerVirtualMachines')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierKubernetesService')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "ContainerRegistry",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'KubernetesService')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierContainerRegistry')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "KeyVaults",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'ContainerRegistry')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierKeyVaults')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "Dns",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'KeyVaults')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierDns')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "Arm",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'Dns')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierArm')]"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "OpenSourceRelationalDatabases",
+      "dependsOn": [
+        "[resourceId('Microsoft.Security/pricings', 'Arm')]"
+      ],
+      "properties": {
+        "pricingTier": "[parameters('pricingTierOpenSourceRelationalDatabases')]"
+      }
+    }
+  ]
+}

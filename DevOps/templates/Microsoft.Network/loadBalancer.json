@@ -1,0 +1,86 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "skuName": {
+            "type": "string",
+            "allowedValues": [
+                "Regional",
+                "Global"
+            ]
+        },
+        "skuTier": {
+            "type": "string",
+            "allowedValues": [
+                "Basic",
+                "Standard"
+            ]
+        },
+        "frontendIPConfigurations": {
+            "type": "array",
+            "defaultValue": "[json('null')]"
+        },
+        "backendAddressPools": {
+            "type": "array",
+            "defaultValue": "[json('null')]"
+        },
+        "loadBalancingRules": {
+            "type": "array",
+            "defaultValue": "[json('null')]"
+        },
+        "probes": {
+            "type": "array",
+            "defaultValue": "[json('null')]"
+        },
+        "inboundNatRules": {
+            "type": "array",
+            "defaultValue": "[json('null')]"
+        },
+        "inboundNatPools": {
+            "type": "array",
+            "defaultValue": "[json('null')]"
+        },
+        "outboundRules": {
+            "type": "array",
+            "defaultValue": "[json('null')]"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
+        }
+    },
+    "variables": {
+        "sku": {
+            "name": "[parameters('skuName')]",
+            "tier": "[parameters('skuTier')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2020-07-01",
+            "name": "[parameters('name')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('tags')]",
+            "sku": "[variables('sku')]",
+            "properties": {
+                "frontendIPConfigurations": "[parameters('frontendIPConfigurations')]",
+                "backendAddressPools": "[parameters('backendAddressPools')]",
+                "loadBalancingRules": "[parameters('loadBalancingRules')]",
+                "probes": "[parameters('probes')]",
+                "inboundNatRules": "[parameters('inboundNatRules')]",
+                "inboundNatPools": "[parameters('inboundNatPools')]",
+                "outboundRules": "[parameters('outboundRules')]"
+            }
+        }
+    ]
+}

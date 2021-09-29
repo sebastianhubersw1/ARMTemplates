@@ -1,0 +1,169 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "storageAccountUri": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URI where artifacts required by this template are located."
+            }
+        },
+        "storageAccountContainerSasToken": {
+            "type": "string",
+            "metadata": {
+                "description": "The sasToken required to access storageAccountUri.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated."
+            }
+        },
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "skuName": {
+            "type": "string",
+            "defaultValue": "Standard"
+        },
+        "skuTier": {
+            "type": "string",
+            "defaultValue": "Regional"
+        },
+        "publicIPId": {
+            "type": "string"
+        },
+        "loadBalancerFrontendName": {
+            "type": "string"
+        },
+        "loadBalancerFrontendId": {
+            "type": "string"
+        },
+        "loadBalancerBackendName": {
+            "type": "string"
+        },
+        "loadBalancerBackendId": {
+            "type": "string"
+        },
+        "loadBalancerProbeName": {
+            "type": "string"
+        },
+        "loadBalancerProbeId": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "object",            
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
+        }
+    },
+    "variables": {
+        "loadBalancer": {
+            "path": "[concat(parameters('storageAccountUri'), 'Microsoft.Network/loadBalancer.json', parameters('storageAccountContainerSasToken'))]",
+            "version": "1.0.0.0"
+        } 
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "name": "publicLoadBalancer",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('loadBalancer').path]",
+                    "contentVersion":"[variables('loadBalancer').version]"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[parameters('name')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "skuName": {
+                        "value": "[parameters('skuName')]"
+                    },
+                    "skuTier": {
+                        "value": "[parameters('skuTier')]"
+                    },
+                    "frontendIPConfigurations": {
+                        "value": [
+                            {
+                                "name": "[parameters('loadBalancerFrontendName')]",
+                                "properties": {
+                                    "publicIPAddress": {
+                                    "id": "[parameters('publicIPId')]"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "backendAddressPools": {
+                        "value": [
+                            {
+                                "name": "[parameters('loadBalancerBackendName')]"
+                            }
+                        ]
+                    },
+                    "loadBalancingRules": {
+                        "value": [
+                            {
+                                "properties": {
+                                    "frontendIPConfiguration": {
+                                        "id": "[parameters('loadBalancerFrontendId')]"
+                                    },
+                                    "backendAddressPool": {
+                                        "id": "[parameters('loadBalancerBackendId')]"
+                                    },
+                                    "probe": {
+                                        "id": "[parameters('loadBalancerProbeId')]"
+                                    },
+                                    "protocol": "Tcp",
+                                    "frontendPort": 80,
+                                    "backendPort": 80,
+                                    "enableFloatingIP": true,
+                                    "idleTimeoutInMinutes": 5
+                                },
+                                "name": "PublicLBRule-FE1-http"
+                            },
+                            {
+                                "properties": {
+                                    "frontendIPConfiguration": {
+                                    "id": "[parameters('loadBalancerFrontendId')]"
+                                    },
+                                    "backendAddressPool": {
+                                    "id": "[parameters('loadBalancerBackendId')]"
+                                    },
+                                    "probe": {
+                                    "id": "[parameters('loadBalancerProbeId')]"
+                                    },
+                                    "protocol": "Udp",
+                                    "frontendPort": 10551,
+                                    "backendPort": 10551,
+                                    "enableFloatingIP": true,
+                                    "idleTimeoutInMinutes": 5
+                                },
+                                "name": "PublicLBRule-FE1-udp10551"
+                            }
+                        ]
+                    },
+                    "probes": {
+                        "type": [
+                            {
+                                "properties": {
+                                    "protocol": "Tcp",
+                                    "port": 8008,
+                                    "intervalInSeconds": 5,
+                                    "numberOfProbes": 2
+                                },
+                                "name": "[parameters('loadBalancerProbeName')]"
+                            }
+                        ]
+                    },
+                    "tags": "[parameters('tags')]"
+                }
+            }
+        }
+    ]
+}

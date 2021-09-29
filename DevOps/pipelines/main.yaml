@@ -1,0 +1,110 @@
+#Deploys Resource Templates from Main Branch to lindt & sprüngli
+#Automatically triggers when Main Branch is updated
+
+trigger:
+- main
+
+variables:
+  - group: 'devops'
+  - group: 'weu-sub-200-h-management-001'
+
+pool:
+  vmImage: $(devops_poolName)
+
+stages:
+  - stage: Validate
+    jobs:
+    - job:
+      displayName: 'ARM Resource Templates'
+      steps:     
+
+      #Validate ARM Templates with Azure Resource Manager Template Tool Kit (ARM TTK)
+      - task: RunARMTTKTests@1
+        inputs:
+          templatelocation: '$(Pipeline.Workspace)/s/templates/*'
+          resultLocation: '$(System.DefaultWorkingDirectory)/results'
+          skipTests: 'apiVersions-Should-Be-Recent' #Automation Account API Version is more then 2 years old and the newer is in preview
+          allTemplatesMain: false
+          cliOutputResults: true
+      
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'NUnit'
+          testResultsFiles: '$(System.DefaultWorkingDirectory)\results\*-armttk.xml'
+        condition: always()
+
+  - stage: Copy
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    variables: 
+     containerExist: 'false'
+
+    jobs:
+    
+    - job:
+      displayName: 'ARM Resource Templates'
+      steps:     
+
+      #Clear Container if already exist
+      - task: AzureCLI@2
+        displayName: 'Clear container if already exist'
+        inputs:
+          azureSubscription: '$(devops_resourceManagerConnectionName)'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az account set --subscription $(emea_management_subscriptionId)
+            storageAvailable = az storage account check-name --name $(devops_storageAccountName) --query 'nameAvailable' -o json
+            echo 'StorageAvailable: '$storageAvailable
+            if [[ $storageAvailable -eq 'false' ]]
+            then
+              containerExist = az storage container exists --name $(devops_storageAccountContainerName) --account-name $(devops_storageAccountName) --query 'exists' -o json
+              echo 'ContainerExist: '$containerExist
+
+              if [[ $containerExist -eq 'true' ]]
+              then
+                az storage blob delete-batch -s $(devops_storageAccountContainerName) --account-name $(devops_storageAccountName)
+                echo 'Storage cleared'
+                echo "##vso[task.setvariable variable=containerExist]true"
+              else 
+                echo "##vso[task.setvariable variable=containerExist]false"
+              fi
+            else
+              echo "##vso[task.setvariable variable=containerExist]false"
+            fi
+
+      #Create Resource Group, Storage Account and Storage Account Container for Resource Templates
+      - task: AzureCLI@2
+        displayName: 'Create resource group and storage account'
+        condition: and(succeeded(), eq(variables.containerExist, 'false'))
+        inputs:
+          azureSubscription: '$(devops_resourceManagerConnectionName)'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az account set --subscription $(emea_management_subscriptionId)
+            az group create -l $(emea_management_location) -n $(devops_resourceGroupName) --subscription $(emea_management_subscriptionId)
+            az storage account create -l $(emea_management_location) -g $(devops_resourceGroupName) -n $(devops_storageAccountName) --sku $(devops_storageAccountSku) --subscription $(emea_management_subscriptionId)
+            az storage container create -g $(devops_resourceGroupName) --account-name $(devops_storageAccountName) -n $(devops_storageAccountContainerName) --public-access off --subscription $(emea_management_subscriptionId)
+
+      - task: AzureCLI@2
+        displayName: 'Copy resource templates to storageaccount'
+        inputs:
+          azureSubscription: '$(devops_resourceManagerConnectionName)'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az account set --subscription $(emea_management_subscriptionId)
+            expiretime=$(date -u -d '30 minutes' +%Y-%m-%dT%H:%MZ)
+            connection=$(az storage account show-connection-string \
+            --resource-group $(devops_resourceGroupName) \
+            --name $(devops_storageAccountName) \
+            --query connectionString)
+            token=$(az storage container generate-sas \
+            --name $(devops_storageAccountContainerName) \
+            --expiry $expiretime \
+            --permissions rw \
+            --output tsv \
+            --connection-string $connection)
+            storageAccountUri=$(az storage account show -g $(devops_resourceGroupName) -n $(devops_storageAccountName) --query primaryEndpoints.blob -o tsv)
+            storageAccountContainerUri="${storageAccountUri}$(devops_storageAccountContainerName)/"
+            azcopy copy "$(System.DefaultWorkingDirectory)/templates/*" "${storageAccountContainerUri}?${token}" --recursive=true

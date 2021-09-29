@@ -1,0 +1,92 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_subscriptionId": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_resourceGroupName": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_name": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "scope": "[format('Microsoft.RecoveryServices/vaults/{0}', parameters('name'))]",
+            "type": "Microsoft.Insights/diagnosticsettings",
+            "name": "All to Log Analytics",
+            "apiVersion": "2017-05-01-preview",
+            "properties": {
+                "workspaceId": "[resourceId(
+                    parameters('logAnalyticsWorkspace_subscriptionId'),
+                    parameters('logAnalyticsWorkspace_resourceGroupName'),
+                    'Microsoft.OperationalInsights/workspaces',
+                    parameters('logAnalyticsWorkspace_name'))
+            ]",
+                "logs": [
+                    {
+                        "category": "AzureBackupReport",
+                        "enabled": true
+                    },
+                    {
+                        "category": "CoreAzureBackup",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AddonAzureBackupJobs",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AddonAzureBackupAlerts",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AddonAzureBackupPolicy",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AddonAzureBackupStorage",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AddonAzureBackupProtectedInstance",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AzureSiteRecoveryJobs",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AzureSiteRecoveryEvents",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AzureSiteRecoveryReplicatedItems",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AzureSiteRecoveryReplicationStats",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AzureSiteRecoveryRecoveryPoints",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AzureSiteRecoveryReplicationDataUploadRate",
+                        "enabled": true
+                    },
+                    {
+                        "category": "AzureSiteRecoveryProtectedDiskDataChurn",
+                        "enabled": true
+                    }
+                ]
+            }
+        }
+    ]
+}

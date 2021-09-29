@@ -1,0 +1,34 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "peeringSettings": {
+            "type": "object"
+        },
+        "otherVirtualNetworkResourceId": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-07-01",
+            "name": "[concat(parameters('virtualNetworkName'), '/', parameters('name'))]",
+            "properties": {
+                "allowVirtualNetworkAccess": "[parameters('peeringSettings').allowVirtualNetworkAccess]",
+                "allowForwardedTraffic": "[parameters('peeringSettings').allowForwardedTraffic]",
+                "allowGatewayTransit": "[parameters('peeringSettings').allowGatewayTransit]",
+                "useRemoteGateways": "[parameters('peeringSettings').useRemoteGateways]",
+                "remoteVirtualNetwork": {
+                    "id": "[parameters('otherVirtualNetworkResourceId')]"
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,53 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "automationAccount_name": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_subscriptionId": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_resourceGroupName": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspace_name": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "scope": "[format('Microsoft.Automation/automationAccounts/{0}', parameters('automationAccount_name'))]",
+            "type": "Microsoft.Insights/diagnosticsettings",
+            "apiVersion": "2017-05-01-preview",
+            "name": "All to Log Analytics",
+            "properties": {
+                "workspaceId": "[resourceId(
+                    parameters('logAnalyticsWorkspace_subscriptionId'),
+                    parameters('logAnalyticsWorkspace_resourceGroupName'),
+                    'Microsoft.OperationalInsights/workspaces',
+                    parameters('logAnalyticsWorkspace_name'))]",
+                "logs": [
+                    {
+                        "category": "JobLogs",
+                        "enabled": true
+                    },
+                    {
+                        "category": "JobStreams",
+                        "enabled": true
+                    },
+                    {
+                        "category": "DscNodeStatus",
+                        "enabled": true
+                    }
+                ],
+                "metrics": [
+                    {
+                        "category": "AllMetrics",
+                        "enabled": true
+                    }
+                ]
+            }
+        }
+    ]
+}

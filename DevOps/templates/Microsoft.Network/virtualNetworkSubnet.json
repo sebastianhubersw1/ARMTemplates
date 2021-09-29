@@ -1,0 +1,80 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "addressPrefix": {
+            "type": "string"
+        },
+        "privateEndpointNetworkPolicies": {
+            "type": "string",
+            "allowedValues": [
+                "Enabled",
+                "Disabled"
+            ],
+            "metadata": {
+                "description": "Controls if NSG rule sets are enabled or disabled for Private Endpoints. If private Endpoints are used, the value needs to be set to 'disabled'."
+            }
+        },
+        "privateLinkServiceNetworkPolicies": {
+            "type": "string",
+            "allowedValues": [
+                "Enabled",
+                "Disabled"
+            ],
+            "metadata": {
+                "description": "Controls if NSG rule sets are enabled or disabled for Private Link IP Addresses. If private Privale Link IP Addresses are used, the value needs to be set to 'disabled'."
+            }
+        },
+        "networkSecurityGroupResourceId": {
+            "type": "string",
+            "defaultValue": "nothing",
+            "metadata": {
+                "description": "Default value will be applied if no value is submitted at deployment time. If so, 'nothing' is used for the concatenate logic in the variables section."
+            }
+        },
+        "routeTableResourceId": {
+            "type": "string",
+            "defaultValue": "nothing",
+            "metadata": {
+                "description": "Default value will be applied if no value is submitted at deployment time. If so, 'nothing' is used for the concatenate logic in the variables section."
+            }
+        }
+    },
+    "variables": {
+        "emptyObject": "[json('{}')]",
+        "baseProperties": {
+            "addressPrefix": "[parameters('addressPrefix')]",
+            "privateEndpointNetworkPolicies": "[parameters('privateEndpointNetworkPolicies')]",
+            "privateLinkServiceNetworkPolicies": "[parameters('privateLinkServiceNetworkPolicies')]"
+        },
+        "networkSecurityGroup": {
+            "networkSecurityGroup": {
+                "id": "[parameters('networkSecurityGroupResourceId')]"
+            }
+        },
+        "routeTable": {
+            "routeTable": {
+                "id": "[parameters('routeTableResourceId')]"
+            }
+        },
+        "properties": "[union(
+                variables('baseProperties'),
+                if(equals(parameters('networkSecurityGroupResourceId'), 'nothing'), variables('emptyObject'), variables('networkSecurityGroup')),
+                if(equals(parameters('routeTableResourceId'), 'nothing'), variables('emptyObject'), variables('routeTable'))
+        )]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-07-01",
+            "name": "[concat(parameters('virtualNetworkName'), '/', parameters('name'))]",
+            "properties": "[variables('properties')]"
+        }
+    ]
+}

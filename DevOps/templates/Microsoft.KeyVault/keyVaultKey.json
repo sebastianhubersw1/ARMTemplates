@@ -1,0 +1,95 @@
+ {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "keyVaultName": {
+            "type": "string"
+        },
+        "keyType": {
+            "type": "string",
+            "allowedValues": [
+                "EC",
+                "EC-HSM",
+                "RSA",
+                "RSA-HSM"
+            ]
+        },
+        "keySize": {
+            "type": "int",
+            "allowedValues": [
+                2048,
+                3072,
+                4096
+            ],
+            "metadata": {
+                "description": "Only use with RSA key types"
+            }
+        },
+        "curveName": {
+            "type": "string",
+            "allowedValues": [
+                "P-256",
+                "P-384",
+                "P-521",
+                "P-256K"
+            ],
+            "metadata": {
+                "description": "Only use with EC key types"
+            }
+
+        },
+        "keyEnabled": {
+            "type": "bool"
+        },
+        "keyActivation": {
+            "type": "int",
+            "metadata": {
+                "description": "Value in seconds, starting 1.1.1970. 1609459200=01.01.2021, "
+            }
+        },
+        "keyExpiration": {
+            "type": "int",
+            "metadata": {
+                "description": "Value in seconds, starting 1.1.1970. 1640908800=31.12.2021, "
+            }
+        },
+        "keyOperations": {
+            "type": "array",
+            "allowedValues": [
+                "encrypt",
+                "decrypt",
+                "sign",
+                "verify",
+                "wrapKey",
+                "unwrapKey",
+                "import"
+            ]
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults/keys",
+            "apiVersion": "2019-09-01",
+            "name": "[concat(parameters('keyVaultName'), '/', parameters('name'))]",
+            "properties": {
+                "kty": "[parameters('keytype')]",
+                "keySize": "[parameters('keySize')]",
+                "curveName": "[parameters('curveName')]",
+                "attributes": {
+                    "enabled": "[parameters('keyEnabled')]",
+                    "nbf": "[parameters('keyActivation')]",
+                    "exp": "[parameters('keyExpiration')]"
+                },
+                "keyOps": "[parameters('keyOperations')]"
+            },
+            "tags": "[parameters('tags')]"
+        }
+    ]
+}
