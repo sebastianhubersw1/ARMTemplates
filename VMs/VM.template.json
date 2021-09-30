@@ -200,7 +200,7 @@
                             "createOption": "Attach",
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[resourceId('Microsoft.Resources/deployments','DataDisk')]"
+                                "id": "[resourceId('Microsoft.Compute/disks',variables('dataDiskName'))]"
                             },
                             "writeAcceleratorEnabled": false
                         }
@@ -209,7 +209,8 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Resources/deployments','NIC')]"
+                            //"id": "[resourceId('Microsoft.Resources/deployments','NIC')]"
+                            "id":"[resourceId('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
                         }
                     ]
                 },
@@ -227,8 +228,8 @@
                     }
                 },
                 "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Resources/deployments','AvSet')]"
-                    //"[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
+                   // "id": "[resourceId('Microsoft.Resources/deployments','AvSet')]"
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
                 }
             }
         }
