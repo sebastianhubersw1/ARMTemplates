@@ -200,7 +200,7 @@
                             "createOption": "Attach",
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[resourceId('Microsoft.Compute/disks',variables('dataDiskName'))]"
+                                "id": "[resourceId('Microsoft.Compute/disks/',variables('dataDiskName'))]"
                             },
                             "writeAcceleratorEnabled": false
                         }
@@ -229,7 +229,7 @@
                 },
                 "availabilitySet": {
                    // "id": "[resourceId('Microsoft.Resources/deployments','AvSet')]"
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets/', parameters('availabilitySetName'))]"
                 }
             }
         }
