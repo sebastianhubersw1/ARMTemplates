@@ -26,18 +26,6 @@
         "osDiskType": {
             "value": "Premium_LRS"
         },
-        "dataDisks": {
-            "value": [
-                {
-                    "createOption": "attach",
-                    "caching": "none",
-                    "writeAcceleratorEnabled": false,
-                    "id": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-p-domaincontrollers-DCRS-rg/providers/Microsoft.Compute/disks/weu200pdc00001-datadisk",
-                    "name": null
-                    
-                }
-            ]
-        },
         "virtualMachineSize": {
             "value": "Standard_D4s_v3"
         },
