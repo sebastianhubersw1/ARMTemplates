@@ -5,9 +5,6 @@
         "location": {
             "type": "string"
         },
-        "networkInterfaceName": {
-            "type": "string"
-        },
         "enableAcceleratedNetworking": {
             "type": "bool"
         },
@@ -17,13 +14,16 @@
         "virtualNetworkId": {
             "type": "string"
         },
+        "privateIPAddress": {
+            "type": "string"
+        },
         "virtualMachineName": {
             "type": "string"
         },
         "virtualMachineComputerName": {
             "type": "string"
         },
-      
+
         "osDiskType": {
             "type": "string"
         },
@@ -47,31 +47,56 @@
         },
         "availabilitySetName": {
             "type": "string"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
         }
     },
     "variables": {
         "vnetId": "[parameters('virtualNetworkId')]",
-        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+        "networkInterfaceName": "[concat(parameters('virtualMachineName'),'-NIC-001')]",
+        "NSGName": "[concat('weu-200-h-identity-emea-',parameters('subnetName'),'-nsg')]"
     },
     "resources": [
         {
-            "name": "[parameters('networkInterfaceName')]",
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2020-05-01",
-            "location": "[parameters('location')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "NIC",
+            "dependsOn": [ "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]" ],
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig1",
-                        "properties": {
-                            "subnet": {
-                                "id": "[variables('subnetRef')]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic"
-                        }
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/sebastianhubersw1/ARMTemplates/master/NIC/networkInterface.template.json"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "name": {
+                        "value": "[variables('networkInterfaceName')]"
+                    },
+                    "ipConfig01SubnetResourceId": {
+                        "value": "[variables('subnetRef')]"
+                    },
+                    "dnsServers": {
+                        "value": []
+                    },
+                    "privateIPAddress": {
+                        "value": "[parameters('privateIPAddress')]"
+                    },
+                    "NSG_Id": {
+                        "value": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]"
+                    },
+                    "enableAcceleratedNetworking": {
+                        "value": "[parameters('enableAcceleratedNetworking')]"
+                    },
+                    "tags": {
+                        "value": "[parameters('tags')]"
                     }
-                ],
-                "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]"
+
+                }
             }
         },
         {
@@ -80,7 +105,7 @@
             "apiVersion": "2021-03-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName'))]"
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -88,8 +113,8 @@
                 },
                 "storageProfile": {
                     "osDisk": {
-                        "name" : "[concat(parameters('VirtualMachineName'),'-osDisk')]", 
-                       "createOption": "fromImage",
+                        "name": "[concat(parameters('VirtualMachineName'),'-osDisk')]",
+                        "createOption": "fromImage",
                         "managedDisk": {
                             "storageAccountType": "[parameters('osDiskType')]"
                         }
@@ -108,9 +133,9 @@
                                 "lun": "0",
                                 "createOption": "[parameters('dataDisks')[copyIndex('dataDisks')].createOption]",
                                 "caching": "[parameters('dataDisks')[copyIndex('dataDisks')].caching]",
-                                 "managedDisk": {
+                                "managedDisk": {
                                     "id": "[coalesce(parameters('dataDisks')[copyIndex('dataDisks')].id, if(equals(parameters('dataDisks')[copyIndex('dataDisks')].name, json('null')), json('null'), resourceId('Microsoft.Compute/disks', parameters('dataDisks')[copyIndex('dataDisks')].name)))]"
-                                    },
+                                },
                                 "writeAcceleratorEnabled": "[parameters('dataDisks')[copyIndex('dataDisks')].writeAcceleratorEnabled]"
                             }
                         }
@@ -119,7 +144,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
                         }
                     ]
                 },

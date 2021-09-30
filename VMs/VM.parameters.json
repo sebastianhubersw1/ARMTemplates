@@ -5,17 +5,17 @@
         "location": {
             "value": "westeurope"
         },
-        "networkInterfaceName": {
-            "value": "chdc1-nic"
-        },
         "enableAcceleratedNetworking": {
             "value": true
         },
         "subnetName": {
-            "value": "snet-1"
+            "value": "snet-ita"
         },
         "virtualNetworkId": {
             "value": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-p-network-DCRS-rg/providers/Microsoft.Network/virtualNetworks/weu-200-p-DCRS-001-vnet"
+        },
+        "privateIpAddress":{
+            "value": "10.35.35.4"
         },
         "virtualMachineName": {
             "value": "CHDC2"
@@ -60,6 +60,10 @@
         },
         "availabilitySetName": {
             "value": "weu-200-h-rootDC-avail"
+        },
+        "tags": {
+            "value": {
+            }
         }
     }
 }
