@@ -9,19 +9,19 @@
             "value": true
         },
         "subnetName": {
-            "value": "snet-ita"
+            "value": "snet-int"
         },
         "virtualNetworkId": {
-            "value": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-p-network-DCRS-rg/providers/Microsoft.Network/virtualNetworks/weu-200-p-DCRS-001-vnet"
+            "value": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-p-network-DCRS-rg/providers/Microsoft.Network/virtualNetworks/weu-200-h-identity-vnet"
         },
         "privateIpAddress":{
-            "value": "10.35.35.4"
+            "value": "10.32.16.36"
         },
         "virtualMachineName": {
-            "value": "CHDC2"
+            "value": "weu200pdc00001"
         },
         "virtualMachineComputerName": {
-            "value": "CHDC2"
+            "value": "weu200pdc00001"
         },
         "osDiskType": {
             "value": "Premium_LRS"

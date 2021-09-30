@@ -26,9 +26,6 @@
         "osDiskType": {
             "type": "string"
         },
-        "dataDisks": {
-            "type": "array"
-        },
         "virtualMachineSize": {
             "type": "string"
         },
@@ -84,7 +81,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
             "name": "NIC",
-            "dependsOn": ["[resourceId('Microsoft.Resources/deployments', 'NSG')]"],
+            "dependsOn": [ "[resourceId('Microsoft.Resources/deployments', 'NSG')]" ],
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -133,10 +130,10 @@
                         "value": "[parameters('location')]"
                     },
                     "name": {
-                        "value": "[parameters('availabilitySetName')]" 
+                        "value": "[parameters('availabilitySetName')]"
                     },
                     "connectProximityPlacementGroup": {
-                        "value": false 
+                        "value": false
                     },
                     "tags": {
                         "value": "[parameters('tags')]"
@@ -159,7 +156,7 @@
                         "value": "[parameters('location')]"
                     },
                     "Datadisk_name": {
-                        "value": "[variables('dataDiskName')]" 
+                        "value": "[variables('dataDiskName')]"
                     },
                     "tags": {
                         "value": "[parameters('tags')]"
@@ -176,7 +173,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Resources/deployments','NIC')]",
                 "[resourceId('Microsoft.Resources/deployments', 'NSG')]",
-                "[resourceId('Microsoft.Resources/deployments', 'AvSet')]"
+                "[resourceId('Microsoft.Resources/deployments', 'AvSet')]",
+                "[resourceId('Microsoft.Resources/deployments', 'DataDisk')]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -196,19 +194,15 @@
                         "sku": "2019-Datacenter",
                         "version": "latest"
                     },
-                    "copy": [
+                    "DataDisks": [
                         {
-                            "name": "dataDisks",
-                            "count": "[length(parameters('dataDisks'))]",
-                            "input": {
-                                "lun": "0",
-                                "createOption": "[parameters('dataDisks')[copyIndex('dataDisks')].createOption]",
-                                "caching": "[parameters('dataDisks')[copyIndex('dataDisks')].caching]",
-                                "managedDisk": {
-                                    "id": "[coalesce(parameters('dataDisks')[copyIndex('dataDisks')].id, if(equals(parameters('dataDisks')[copyIndex('dataDisks')].name, json('null')), json('null'), resourceId('Microsoft.Compute/disks', parameters('dataDisks')[copyIndex('dataDisks')].name)))]"
-                                },
-                                "writeAcceleratorEnabled": "[parameters('dataDisks')[copyIndex('dataDisks')].writeAcceleratorEnabled]"
-                            }
+                            "lun": 0,
+                            "createOption": "Attach",
+                            "caching": "None",
+                            "managedDisk": {
+                                "id": "[resourceId('Microsoft.Resources/deployments','DataDisk')]"
+                            },
+                            "writeAcceleratorEnabled": false
                         }
                     ]
                 },
