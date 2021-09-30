@@ -1,27 +1,35 @@
- {
+{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "location": {
-            "type": "string"
-        },
         "name": {
             "type": "string"
         },
+        "location": {
+            "type": "string"
+        },
+        "securityRules": {
+            "type": "array",
+            "defaultValue": "[json('[]')]"
+        },
         "tags": {
-            "type": "object"
+            "type": "object",
+            "defaultValue": "[json('{}')]",
+            "metadata": {
+                "description": "Object with tags"
+            }
         }
     },
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2020-06-01",
-            "location": "[parameters('location')]",
+            "apiVersion": "2020-07-01",
             "name": "[parameters('name')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('tags')]",
             "properties": {
-                "securityRules": []
-            },
-            "tags": "[parameters('tags')]"
+                "securityRules": "[parameters('securityRules')]"
+            }
         }
     ]
 }
