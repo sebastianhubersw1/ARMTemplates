@@ -9,7 +9,14 @@
         "DataDisk_Size": {
             "defaultValue": 128,
             "type": "int"
+        },
+        "location": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "object"
         }
+        
     },
     "variables": {},
     "resources": [
@@ -17,7 +24,7 @@
             "type": "Microsoft.Compute/disks",
             "apiVersion": "2020-09-30",
             "name": "[parameters('Datadisk_name')]",
-            "location": "westeurope",
+            "location": "[parameters('location')]",
             "sku": {
                 "name": "Premium_LRS",
                 "tier": "Premium"
@@ -35,7 +42,9 @@
                 "diskState": "Unattached",
                 "networkAccessPolicy": "AllowAll",
                 "tier": "P10"
-            }
+                },
+                "tags": "[parameters('tags')]"                 
+                
         }
     ]
 }

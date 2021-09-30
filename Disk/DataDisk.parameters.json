@@ -4,6 +4,18 @@
     "parameters": {
         "datadisk_name": {
             "value": "weu200pdc00001-datadisk"
+        },
+        "location": {
+            "value": "westeurope"
+        },
+        "DataDisk_Size": {
+            "value": 128
+        },
+        "tags": {
+            "value": {
+                "owner": "L&S",
+                "notes": "Network Interface"
+            }
         }
     }
 }
