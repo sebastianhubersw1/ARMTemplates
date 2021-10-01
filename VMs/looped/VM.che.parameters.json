@@ -12,7 +12,7 @@
             "value": "snet-che"
         },
         "virtualNetworkId": {
-            "value": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-p-network-DCRS-rg/providers/Microsoft.Network/virtualNetworks/weu-200-h-identity-vnet"
+            "value": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-h-network-rg/providers/Microsoft.Network/virtualNetworks/weu-200-h-identity-vnet"
         },
         "privateIpAddress":{
             "value":[
