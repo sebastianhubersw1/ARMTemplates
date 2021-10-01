@@ -53,6 +53,24 @@
         "vnetId": "[parameters('virtualNetworkId')]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
         "NSGName": "[concat('weu-200-h-identity-emea-',parameters('subnetName'),'-nsg')]",
+        "copy": [
+            {
+                "name": "OsDiskName",
+                "count": "[length(parameters('virtualMachineName'))]",
+                "input": "[concat(parameters('VirtualMachineName')[copyIndex('OsDiskName')],'-osDisk-001')]"
+
+            },
+            {
+                "name": "datadiskName",
+                "count": "[length(parameters('virtualMachineName'))]",
+                "input": "[concat(parameters('virtualMachineName')[copyIndex('dataDiskName')],'-datadisk-001')]"
+            },
+            {
+                "name": "NicName",
+                "count": "[length(parameters('virtualMachineName'))]",
+                "input": "[concat(parameters('virtualMachineName')[copyIndex('NicName')],'-NIC-001')]"
+            } 
+        ] 
     },
     "resources": [
         {
@@ -121,7 +139,7 @@
                     },
                     "name": {
                         // "value": "[variables('networkInterfaceName')]"
-                        "value": "[concat(parameters('virtualMachineName')[copyIndex('NIC-copy')],'-NIC-001')]"
+                        "value": "[variables('NicName')[copyIndex('NIC-copy')]]"
 
                     },
                     "ipConfig01SubnetResourceId": {
@@ -164,7 +182,7 @@
                         "value": "[parameters('location')]"
                     },
                     "Datadisk_name": {
-                        "value": "[concat(parameters('virtualMachineName')[copyIndex('DD-Copy')],'-DataDisk-001')]"
+                        "value": "[variables('datadiskName')[copyIndex('DD-Copy')]]"
                     },
                     "tags": {
                         "value": "[parameters('tags')]"
@@ -194,7 +212,7 @@
                 },
                 "storageProfile": {
                     "osDisk": {
-                        "name": "[concat(parameters('virtualMachineName')[copyIndex('VM-Copy')],'-OSDisk-001')]",
+                        "name": "[variables('OsDiskName')[copyIndex('VM-Copy')]]",
                         "createOption": "fromImage",
                         "managedDisk": {
                             "storageAccountType": "[parameters('osDiskType')]"
@@ -212,7 +230,7 @@
                             "createOption": "Attach",
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[resourceId('Microsoft.Compute/disks/',concat(parameters('virtualMachineName')[copyIndex('VM-Copy')],'-DataDisk-001'))]"
+                                "id": "[resourceId('Microsoft.Compute/disks/',variables('datadiskName')[copyIndex('VM-Copy')])]"
                             },
                             "writeAcceleratorEnabled": false
                         }
@@ -222,7 +240,7 @@
                     "networkInterfaces": [
                         {
                             //"id": "[resourceId('Microsoft.Resources/deployments','NIC')]"
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat(parameters('virtualMachineName')[copyIndex('VM-Copy')],'-NIC-001'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces/', variables('NicName')[copyIndex('VM-Copy')])]"
                         }
                     ]
                 },
@@ -251,5 +269,6 @@
             "type": "string",
             "value": "[parameters('adminUsername')]"
         }
+
     }
 }
