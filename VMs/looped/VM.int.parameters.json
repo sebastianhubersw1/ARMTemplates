@@ -1,0 +1,66 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "westeurope"
+        },
+        "enableAcceleratedNetworking": {
+            "value": true
+        },
+        "subnetName": {
+            "value": "snet-int"
+        },
+        "virtualNetworkId": {
+            "value": "/subscriptions/33b11898-d60f-46b7-9dd7-c2552cbfc3b3/resourceGroups/weu-200-p-network-DCRS-rg/providers/Microsoft.Network/virtualNetworks/weu-200-h-identity-vnet"
+        },
+        "privateIpAddress":{
+            "value":[
+                "10.32.16.36",
+                "10.32.16.37"
+            ]
+        },
+        "virtualMachineName": {
+            "value": [
+                "weu200pdc00001",
+                "weu200pdc00002"
+            ]
+        },
+        "virtualMachineComputerName": {
+            "value": [
+                "weu200pdc00001",
+                "weu200pdc00002"
+            ]
+        },
+        "osDiskType": {
+            "value": "Premium_LRS"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_D4s_v3"
+        },
+        "adminUsername": {
+            "value": "azadmin"
+        },
+        "adminPassword": {
+            "reference": {
+                "keyVault": {
+                    "id": "/subscriptions/7167a314-3fa6-4933-ae63-639bd0f47cb7/resourceGroups/swn-RG-sharedRessources/providers/Microsoft.KeyVault/vaults/kvshu"
+                },
+                "secretName": "VMPassword"
+            }
+        },
+        "patchMode": {
+            "value": "AutomaticByOS"
+        },
+        "enableHotpatching": {
+            "value": false
+        },
+        "availabilitySetName": {
+            "value": "weu-200-h-rootDC-avail"
+        },
+        "tags": {
+            "value": {
+            }
+        }
+    }
+}

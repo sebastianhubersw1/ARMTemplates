@@ -1,0 +1,255 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "enableAcceleratedNetworking": {
+            "type": "bool"
+        },
+        "subnetName": {
+            "type": "string"
+        },
+        "virtualNetworkId": {
+            "type": "string"
+        },
+        "privateIPAddress": {
+            "type": "array"
+        },
+        "virtualMachineName": {
+            "type": "array"
+        },
+        "virtualMachineComputerName": {
+            "type": "array"
+        },
+        "osDiskType": {
+            "type": "string"
+        },
+        "virtualMachineSize": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "secureString"
+        },
+        "patchMode": {
+            "type": "string"
+        },
+        "enableHotpatching": {
+            "type": "bool"
+        },
+        "availabilitySetName": {
+            "type": "string"
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": "[json('{}')]"
+        }
+    },
+    "variables": {
+        "vnetId": "[parameters('virtualNetworkId')]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+        "NSGName": "[concat('weu-200-h-identity-emea-',parameters('subnetName'),'-nsg')]",
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "NSG",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/sebastianhubersw1/ARMTemplates/master/NSG/networkSecurityGroup.template.json"
+                },
+                "parameters": {
+                    "name": {
+                        "value": "[variables('NSGName')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    }
+                }
+            }
+        },
+
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "AvSet",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/sebastianhubersw1/ARMTemplates/master/AvSet/availabilitySet.template.json"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "name": {
+                        "value": "[parameters('availabilitySetName')]"
+                    },
+                    "connectProximityPlacementGroup": {
+                        "value": false
+                    },
+                    "tags": {
+                        "value": "[parameters('tags')]"
+                    }
+
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "[concat('NIC-',copyIndex('NIC-Copy'))]",
+            "dependsOn": [ "[resourceId('Microsoft.Resources/deployments', 'NSG')]" ],
+            "copy": {
+                "name": "NIC-Copy",
+                "count": "[length(parameters('virtualMachineName'))]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/sebastianhubersw1/ARMTemplates/master/NIC/networkInterface.template.json"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "name": {
+                        // "value": "[variables('networkInterfaceName')]"
+                        "value": "[concat(parameters('virtualMachineName')[copyIndex('NIC-copy')],'-NIC-001')]"
+
+                    },
+                    "ipConfig01SubnetResourceId": {
+                        "value": "[variables('subnetRef')]"
+                    },
+                    "dnsServers": {
+                        "value": []
+                    },
+                    "privateIPAddress": {
+                        "value": "[parameters('privateIPAddress')[copyIndex('NIC-Copy')]]"
+                    },
+                    "NSG_Id": {
+                        "value": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]"
+                    },
+                    "enableAcceleratedNetworking": {
+                        "value": "[parameters('enableAcceleratedNetworking')]"
+                    },
+                    "tags": {
+                        "value": "[parameters('tags')]"
+                    }
+
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "[concat('DataDisk-',copyIndex())]",
+            "copy": {
+                "name": "DD-Copy",
+                "count": "[length(parameters('virtualMachineName'))]"
+            },
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/sebastianhubersw1/ARMTemplates/master/Disk/DataDisk.template.json"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "Datadisk_name": {
+                        "value": "[concat(parameters('virtualMachineName')[copyIndex('DD-Copy')],'-DataDisk-001')]"
+                    },
+                    "tags": {
+                        "value": "[parameters('tags')]"
+                    }
+
+                }
+            }
+        },
+        {
+            "name": "[parameters('virtualMachineName')[copyIndex('VM-Copy')]]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2021-03-01",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments',concat('NIC-',copyIndex('VM-Copy')))]",
+                "[resourceId('Microsoft.Resources/deployments', 'NSG')]",
+                "[resourceId('Microsoft.Resources/deployments', 'AvSet')]",
+                "[resourceId('Microsoft.Resources/deployments', concat('DataDisk-',copyIndex('VM-Copy')))]"
+            ],
+            "copy": {
+                "name": "VM-Copy",
+                "count": "[length(parameters('virtualMachineName'))]"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(parameters('virtualMachineName')[copyIndex('VM-Copy')],'-OSDisk-001')]",
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('osDiskType')]"
+                        }
+                    },
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2019-Datacenter",
+                        "version": "latest"
+                    },
+                    "DataDisks": [
+                        {
+                            "lun": 0,
+                            "createOption": "Attach",
+                            "caching": "None",
+                            "managedDisk": {
+                                "id": "[resourceId('Microsoft.Compute/disks/',concat(parameters('virtualMachineName')[copyIndex('VM-Copy')],'-DataDisk-001'))]"
+                            },
+                            "writeAcceleratorEnabled": false
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            //"id": "[resourceId('Microsoft.Resources/deployments','NIC')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces/', concat(parameters('virtualMachineName')[copyIndex('VM-Copy')],'-NIC-001'))]"
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachineComputerName')[copyIndex('VM-Copy')]]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "windowsConfiguration": {
+                        "enableAutomaticUpdates": true,
+                        "provisionVmAgent": true,
+                        "patchSettings": {
+                            "enableHotpatching": "[parameters('enableHotpatching')]",
+                            "patchMode": "[parameters('patchMode')]"
+                        }
+                    }
+                },
+                "availabilitySet": {
+                    // "id": "[resourceId('Microsoft.Resources/deployments','AvSet')]"
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets/', parameters('availabilitySetName'))]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "string",
+            "value": "[parameters('adminUsername')]"
+        }
+    }
+}
