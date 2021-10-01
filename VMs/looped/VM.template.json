@@ -55,22 +55,22 @@
         "NSGName": "[concat('weu-200-h-identity-emea-',parameters('subnetName'),'-nsg')]",
         "copy": [
             {
-                "name:": "OsDiskName",
+                "name": "OsDiskName",
                 "count": "[length(parameters('virtualMachineName'))]",
-                "input": "[concat(parameters('VirtualMachineName')[copyIndex('OsDiskName')],'-osDisk')]"
+                "input": "[concat(parameters('VirtualMachineName')[copyIndex('OsDiskName')],'-osDisk-001')]"
 
             },
             {
-                "name": "datadiskname",
+                "name": "datadiskName",
                 "count": "[length(parameters('virtualMachineName'))]",
-                "input": "[concat(copyIndex('dataDiskName'),parameters('virtualMachineName'),'-datadisk-001')]"
+                "input": "[concat(parameters('virtualMachineName')[copyIndex('dataDiskName')],'-datadisk-001')]"
             },
             {
-                "name:": "networkInterfaceName",
+                "name": "NicName",
                 "count": "[length(parameters('virtualMachineName'))]",
-                "input": "[concat(copyIndex('networkInterfaceName'),parameters('virtualMachineName'),'-NIC-001')]"
-            }
-        ]
+                "input": "[concat(parameters('virtualMachineName')[copyIndex('NicName')],'-NIC-001')]"
+            } 
+        ] 
     },
     "resources": [
         {
@@ -122,7 +122,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "NIC",
+            "name": "[concat('NIC-',copyIndex('NIC-Copy'))]",
             "dependsOn": [ "[resourceId('Microsoft.Resources/deployments', 'NSG')]" ],
             "copy": {
                 "name": "NIC-Copy",
@@ -139,7 +139,7 @@
                     },
                     "name": {
                         // "value": "[variables('networkInterfaceName')]"
-                        "value": "[variables('networkInterfaceName')[copyIndex('NIC-Copy')]]"
+                        "value": "[variables('NicName')[copyIndex('NIC-copy')]]"
 
                     },
                     "ipConfig01SubnetResourceId": {
@@ -167,7 +167,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "DataDisk",
+            "name": "[concat('DataDisk-',copyIndex())]",
             "copy": {
                 "name": "DD-Copy",
                 "count": "[length(parameters('virtualMachineName'))]"
@@ -182,7 +182,7 @@
                         "value": "[parameters('location')]"
                     },
                     "Datadisk_name": {
-                        "value": "[variables('dataDiskName')[copyIndex('DD-Copy')]]"
+                        "value": "[variables('datadiskName')[copyIndex('DD-Copy')]]"
                     },
                     "tags": {
                         "value": "[parameters('tags')]"
@@ -192,15 +192,15 @@
             }
         },
         {
-            "name": "[parameters('virtualMachineName')]",
+            "name": "[parameters('virtualMachineName')[copyIndex('VM-Copy')]]",
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2021-03-01",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments','NIC')]",
+                "[resourceId('Microsoft.Resources/deployments',concat('NIC-',copyIndex('VM-Copy')))]",
                 "[resourceId('Microsoft.Resources/deployments', 'NSG')]",
                 "[resourceId('Microsoft.Resources/deployments', 'AvSet')]",
-                "[resourceId('Microsoft.Resources/deployments', 'DataDisk')]"
+                "[resourceId('Microsoft.Resources/deployments', concat('DataDisk-',copyIndex('VM-Copy')))]"
             ],
             "copy": {
                 "name": "VM-Copy",
@@ -230,7 +230,7 @@
                             "createOption": "Attach",
                             "caching": "None",
                             "managedDisk": {
-                                "id": "[resourceId('Microsoft.Compute/disks/',variables('dataDiskName')[copyIndex('VM-Copy')])]"
+                                "id": "[resourceId('Microsoft.Compute/disks/',variables('datadiskName')[copyIndex('VM-Copy')])]"
                             },
                             "writeAcceleratorEnabled": false
                         }
@@ -240,12 +240,12 @@
                     "networkInterfaces": [
                         {
                             //"id": "[resourceId('Microsoft.Resources/deployments','NIC')]"
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName')[copyIndex('VM-Copy')])]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces/', variables('NicName')[copyIndex('VM-Copy')])]"
                         }
                     ]
                 },
                 "osProfile": {
-                    "computerName": "[parameters('virtualMachineComputerName')]",
+                    "computerName": "[parameters('virtualMachineComputerName')[copyIndex('VM-Copy')]]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
                     "windowsConfiguration": {
@@ -269,5 +269,6 @@
             "type": "string",
             "value": "[parameters('adminUsername')]"
         }
+
     }
 }
