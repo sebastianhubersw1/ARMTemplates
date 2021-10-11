@@ -52,7 +52,7 @@
     "variables": {
         "vnetId": "[parameters('virtualNetworkId')]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
-        "NSGName": "[concat('weu-200-h-identity-emea-',parameters('subnetName'),'-nsg')]",
+        "NSGName": "[concat('weu-200-h-identity-',parameters('subnetName'),'-nsg')]",
         "networkRG": "weu-200-h-network-rg",
         "copy": [
             {
