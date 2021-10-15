@@ -58,7 +58,7 @@
             {
                 "name": "OsDiskName",
                 "count": "[length(parameters('virtualMachineName'))]",
-                "input": "[concat(parameters('VirtualMachineName')[copyIndex('OsDiskName')],'-osDisk-001')]"
+                "input": "[concat(parameters('VirtualMachineName')[copyIndex('OsDiskName')],'-osDisk')]"
 
             },
             {
